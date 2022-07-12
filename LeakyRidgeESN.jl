@@ -85,7 +85,7 @@ function harvest_states(;w_input, w_reservoir, u,
 
     for t in 1:training_length
         # CONCATENAÇÃO MATRICIAL DE [1] (RELACIONADO AO "BIAS" NO PARADIGMA RNN) E u(n + 1)
-        u_t = vcat([1], u[t])
+        u_t = vcat([1], u[t,:])
         # ATUALIZAÇÃO DOS ESTADOS
         states = ((1 - leaking_rate) .* states) .+ (leaking_rate .* simple_update(win = w_input, wres = w_reservoir, u = u_t, states = states)) 
         if t > transient

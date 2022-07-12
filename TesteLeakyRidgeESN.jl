@@ -19,13 +19,13 @@ case = "HenonMap"
 # DEFINE A SEED DO ALGORITMO PSEUDO-ALEATÓRIO
 Random.seed!(42)
 # OBSERVAÇÕES PARA TREINAMENTO
-training_length = 3000::Int64
+training_length = 10::Int64
 # OBSERVAÇÕES PARA TESTE
-testing_length = 100::Int64
+testing_length = 10::Int64
 # TRANSIENTE
-init_length = 100::Int64
+init_length = 0::Int64
 # NÚMERO DE UNIDADES DE PROCESSAMENTO (NEURÔNIOS)
-n_neurons = 3000::Int64
+n_neurons = 10::Int64
 # RAIO ESPECTRAL
 spectral_radius = 1.25::Float64
 # TAXA DE VAZAMENTO
@@ -85,7 +85,7 @@ w_reservoir = reservoir_weights(n_neurons = n_neurons,
 
 extended_states, last_state = harvest_states(w_input = w_input, 
                                              w_reservoir = w_reservoir, 
-                                             u = u, n_neurons = n_neurons, 
+                                             u = u[1 : training_length, :], n_neurons = n_neurons, 
                                              input_dim = input_dim,
                                              training_length = training_length,
                                              transient = init_length,
@@ -93,15 +93,19 @@ extended_states, last_state = harvest_states(w_input = w_input,
                                              messages = true)
 
 w_output = tikhonov_regression(extended_states = extended_states, 
-                               output = y[init_length + 2 : training_length + 1, :], 
+                               output = y[2 + init_length : 1 + training_length, :], 
                                messages = true)
-
+println(u[1 : training_length, :])
+# y[init_length + 2 : training_length + 1, :]
+println(y[2 + init_length : 1 + training_length, :])
+println(last_state)
 y_hat = predict(w_output = w_output, w_input = w_input, w_reservoir = w_reservoir,
                 u = u[training_length + 1, :], states = last_state, output_dim = output_dim, 
                 to_predict = testing_length - 1, leaking_rate = 0.3, messages = true)
-
-y_testing = y[training_length + 2 : training_length + testing_length, :]
+println(u[training_length + 1, :])
+println(y_hat)
+#y_testing = y[training_length + 2 : training_length + testing_length, :]
 #println(y_testing)
 #println(y_hat)
 #println(u[training_length + 1, :])
-plot(y_testing); plot!(y_hat)
+#plot(y_testing); plot!(y_hat)

@@ -49,13 +49,43 @@ def mackey_glass(n_observations, beta=0.2, theta=0.8, gama=0.9, tau=23, n=10, p0
 
 
 if __name__ == "__main__":
-    h_map = henon_map(x0=0, y0=0, n_observations=5000)
-    #print(h_map.shape)
-    l_att = lorenz_attractor(state0=(1,1,1), rho=28, sigma=10, beta=8/3, n_observations=4000, final_t=40)
-    #print(l_att.shape)
-    mack_glass = mackey_glass(n_observations=10000,tau=22, gama=0.9)
-    #print(mack_glass.shape)
+    
+    # Lorenz Attractor
+    """
+    l_att = lorenz_attractor(state0 = (1,1,1), rho = 28, sigma = 10, 
+                             beta = 8/3, n_observations = 1000000, final_t = 1000)
+    print(type(l_att))
+    print(l_att.shape)
+    numpy.savetxt("lorenzAttractor.txt", l_att, delimiter = ",")
+    """
 
+    # Henon Map
+    """
+    h_map = henon_map(x0 = 0, y0 = 0, n_observations = 1000000)
+    print(type(h_map))
+    print(h_map.shape)
+    numpy.savetxt("henonMap.txt", h_map, delimiter = ",")
+    """
+
+    # Mackey Glass 17
+    """
+    mack_glass = mackey_glass(n_observations = 1000000, beta = 0.2, theta = 0.8, gama = 0.9, tau = 17, 
+                              n = 10, p0 = 0.1)
+    print(type(mack_glass))
+    print(mack_glass.shape)
+    numpy.savetxt("mackeyGlass17.txt", mack_glass)
+    """
+
+    # Mackey Glass 22
+    """
+    mack_glass = mackey_glass(n_observations = 1000000, beta = 0.2, theta = 0.8, gama = 0.9, tau = 22, 
+                              n = 10, p0 = 0.1)
+    print(type(mack_glass))
+    print(mack_glass.shape)
+    numpy.savetxt("mackeyGlass22.txt", mack_glass)
+    """
+
+    # Plot Lorenz Attractor
     """
     plt.figure()
     plt.gca(projection="3d")
@@ -64,6 +94,16 @@ if __name__ == "__main__":
     plt.show()
     """
 
+    # Plot Henon Map
+    """
     plt.figure()
-    plt.plot(numpy.arange(0,10000), mack_glass)
+    plt.scatter(h_map[:,0], h_map[:,1])
     plt.show()
+    """
+
+    # Plot Mackey Glass
+    """
+    plt.figure()
+    plt.plot(numpy.arange(0,1000000), mack_glass)
+    plt.show()
+    """

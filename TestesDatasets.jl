@@ -1,9 +1,7 @@
 #=
-    TESTAGEM DO USO DE ECHO STATE NEURAL NETWORKS COM LEAKING RATE 
-    TESTAGEM COM O USO DE SISTEMAS CAÓTICOS PADRÃO
-    MACKEY GLASS, MAPA DE HÉNON E ATRATOR DE LORENZ 
+    TESTES AIR PASSENGERS E CANADIAN LYNX
 
-    CRIADO EM 03/07/2022
+    CRIADO EM 16/07/2022
     KEVIN PERGHER
 =#
 
@@ -16,12 +14,12 @@ using CSV
 
 # ARQUIVOS DE FUNÇÕES E OUTROS, PRESENTES NO DIRETÓRIO DO PROGRAMA
 include(pwd() * "\\LeakyRidgeESN.jl")
+include(pwd() * "\\MeasuresESN.jl")
 
 println("\nESN > Echo State Neural Network")
 
 # DEFINE O SISTEMA A SER ANALISADO
-dinsystem = readdlm("henonMap.txt", ',')
-println(size(dinsystem))
+dinsystem = DelimitedFiles.readdlm("CanadianLynx.txt")
 
 # DEFINE O QUE É INPUT E O QUE É OUTPUT - ATRAVÉS DAS DIMENSÕES DO SISTEMA
 u = dinsystem
@@ -35,22 +33,22 @@ output_dim = size(y)[2]
 # DEFINE A SEED DO ALGORITMO PSEUDO-ALEATÓRIO
 Random.seed!(42)
 # OBSERVAÇÕES PARA TREINAMENTO
-training_length = 200::Int64
+training_length = 98::Int64
 # OBSERVAÇÕES PARA TESTE
-testing_length = 5::Int64
+testing_length = 1::Int64
 # TRANSIENTE
-transient = 10::Int64
+transient = 5::Int64
 # QUANTIDADE DE JANELAS
-window = 200::Int64
+window = 15::Int64
 
 # NÚMERO DE UNIDADES DE PROCESSAMENTO (NEURÔNIOS)
-n_neurons = 500::Int64
+n_neurons = 3000::Int64
 # RAIO ESPECTRAL
-spectral_radius = 1.25::Float64
+spectral_radius = 1.75::Float64
 # TAXA DE VAZAMENTO
-leaking_rate = 0.3::Float64
+leaking_rate = 0.1::Float64
 # ESPARCIDADE
-sparsity = 0.3::Float64
+sparsity = 0.6::Float64
 # MENSAGENS
 messages = true::Bool
 
@@ -75,14 +73,14 @@ w_reservoir = reservoir_weights(n_neurons = n_neurons,
 
 # MATRIZES DE COMPARAÇÃO (PREDITO VS REAL)
 test_matrix_x = zeros(window, 1)
-test_matrix_y = zeros(window, 1)
+#test_matrix_y = zeros(window, 1)
 pred_matrix_x = zeros(window, 1)
-pred_matrix_y = zeros(window, 1)
+#pred_matrix_y = zeros(window, 1)
 
 # PARA CADA JANELA
 for t in 1:window
 
-    println("\nESN > Analysis: ", t)
+    println("\nESN > Step: ", t)
     # ENTRADA PARA CADA RODADA DE TREINAMENTO
     u_train = u[t : t + training_length - 1, :]
     # OUTPUT DO TRAINAMENTO
@@ -96,13 +94,19 @@ for t in 1:window
                                                        training_length = training_length,
                                                        transient = transient,
                                                        leaking_rate = leaking_rate,
-                                                       messages = true)
+                                                       messages = false)
     
     # OUTPUT ATRAVÉS DA REGRESSÃO DE TIKHONOV
     local w_output = tikhonov_regression(extended_states = extended_states, 
                                          output = y_train, 
-                                         messages = true)
+                                         messages = false)
     
+    println("ESN > Medidas de erro - Trainning")
+    y_hat_train = transpose(w_output * extended_states)
+    mean_squared_error(data = y_train, pred_data = y_hat_train)
+    normalized_mean_squared_error(data = y_train, pred_data = y_hat_train)
+    mean_absolute_percentage_error(data = y_train, pred_data = y_hat_train)
+
     # PREDICTION
     local y_hat = predict(w_output = w_output, 
                           w_input = w_input, 
@@ -112,19 +116,20 @@ for t in 1:window
                           output_dim = output_dim, 
                           to_predict = testing_length, 
                           leaking_rate = leaking_rate, 
-                          messages = true)
+                          messages = false)
     
-    println(u[t + training_length, :])
-    println(u[t + training_length + testing_length, :])
-    println(y_hat)
-    println(size(y_hat))
     test_matrix_x[t, :] .= u[t + training_length + testing_length, 1]
-    test_matrix_y[t, :] .= u[t + training_length + testing_length, 2]
+    #test_matrix_y[t, :] .= u[t + training_length + testing_length, 2]
     pred_matrix_x[t, :] .= y_hat[testing_length, 1]
-    pred_matrix_y[t, :] .= y_hat[testing_length, 2]
-
+    #pred_matrix_y[t, :] .= y_hat[testing_length, 2]
 end   
 
-#plot(test_matrix); plot!(pred_matrix)
-scatter(test_matrix_x, test_matrix_y, label="System", color="blue")
-scatter!(pred_matrix_x, pred_matrix_y, label="Prediction", color="red")
+# MEDIDAS DE ERRO DA VALIDAÇÃO
+println("\nESN > Medidas de erro - Validação")
+mean_squared_error(data = test_matrix_x, pred_data = pred_matrix_x)
+normalized_mean_squared_error(data = test_matrix_x, pred_data = pred_matrix_x)
+mean_absolute_percentage_error(data = test_matrix_x, pred_data = pred_matrix_x)
+
+# PLOT
+scatter(test_matrix_x, label="System", color="blue", legend=:topleft)
+scatter!(pred_matrix_x, label="Prediction", color="red", legend=:topleft)

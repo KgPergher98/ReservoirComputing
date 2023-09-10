@@ -43,21 +43,43 @@ def lorenz_attractor(state0=(1,1,1), rho=28.0, sigma=10.0, beta=8/3, n_observati
     t = numpy.arange(0,final_t, final_t/n_observations)
     return odeint(equation, state0, t)
 
+def gaussian_noise(mean = 0, std = 1, n_observations = 1000, dim = 1):
+    return numpy.random.normal(mean, std, (n_observations, dim))
+
+def student_noise(df = 4, n_observations = 1000, dim = 1):
+    return numpy.random.standard_t(df, (n_observations, dim))
+
 def mackey_glass(n_observations, beta=0.2, theta=0.8, gama=0.9, tau=23, n=10, p0=0.1):
     x = signalz.mackey_glass(n_observations, a=beta, b=theta, c=gama, d=tau, e=n, initial=p0)
     return numpy.reshape(x, (x.shape[0],1))
 
 
 if __name__ == "__main__":
-    
+
+    # Gaussian Noise
+    gn = gaussian_noise(mean = 0, std = 1, n_observations = 1000000, dim = 1)
+    numpy.savetxt("gaussianNoise1D.txt", gn, delimiter = ",")
+    gn = gaussian_noise(mean = 0, std = 1, n_observations = 1000000, dim = 2)
+    numpy.savetxt("gaussianNoise2D.txt", gn, delimiter = ",")
+    gn = gaussian_noise(mean = 0, std = 1, n_observations = 1000000, dim = 3)
+    numpy.savetxt("gaussianNoise3D.txt", gn, delimiter = ",")
+
     # Lorenz Attractor
     """
     l_att = lorenz_attractor(state0 = (1,1,1), rho = 28, sigma = 10, 
-                             beta = 8/3, n_observations = 1000000, final_t = 1000)
+                             beta = 8/3, n_observations = 1000000, final_t = 10000)
     print(type(l_att))
     print(l_att.shape)
     numpy.savetxt("lorenzAttractor.txt", l_att, delimiter = ",")
     """
+
+    # T STUDENT
+    noise = student_noise(df = 4, n_observations = 1000000, dim = 1)
+    numpy.savetxt("studentNoise1D.txt", noise, delimiter = ",")
+    noise = student_noise(df = 4, n_observations = 1000000, dim = 2)
+    numpy.savetxt("studentNoise2D.txt", noise, delimiter = ",")
+    noise = student_noise(df = 4, n_observations = 1000000, dim = 3)
+    numpy.savetxt("studentNoise3D.txt", noise, delimiter = ",")
 
     # Henon Map
     """
